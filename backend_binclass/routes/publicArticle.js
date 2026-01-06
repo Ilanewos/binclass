@@ -56,9 +56,7 @@ router.get("/:id", (req, res) => {
 
   db.query(sql, [req.params.id], (err, rows) => {
     if (err) return res.status(500).json(err);
-    if (!rows.length)
-      return res.status(404).json({ message: "Artikel tidak ditemukan" });
-
+    if (!rows.length) return res.status(404).json({ message: "Artikel tidak ditemukan" });
     res.json(rows[0]);
   });
 });
