@@ -210,6 +210,11 @@ export default function ArticleAdmin() {
       await adminDeleteArticle(id);
       setArticles((prev) => prev.filter((a) => a.id !== id));
     } catch (e) {
+      console.log(
+        "DELETE ERROR:",
+        e?.response?.status,
+        e?.response?.data || e.message
+      );
       setError("Gagal menghapus artikel.");
     }
   };

@@ -15,7 +15,29 @@ export default function ClassificationStartPage() {
   // File asli untuk dikirim
   const [capturedFile, setCapturedFile] = useState(null);
 
+  // ✅ TAMBAHAN: state loading saat proses scan
+  const [isScanning, setIsScanning] = useState(false);
+
   const navigate = useNavigate();
+
+  // ✅ TAMBAHAN: Loading Overlay (FE only)
+  const LoadingOverlay = ({ show, text = "Sedang memproses scan..." }) => {
+    if (!show) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="bg-white rounded-2xl shadow-xl p-6 w-[320px] text-center">
+          <div className="flex justify-center mb-4">
+            <div className="h-12 w-12 rounded-full border-4 border-gray-300 border-t-green-600 animate-spin" />
+          </div>
+          <p className="font-semibold text-gray-800">{text}</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Mohon tunggu, gambar sedang dianalisis.
+          </p>
+        </div>
+      </div>
+    );
+  };
 
   const openCamera = async () => {
     setCapturedImage(null);
@@ -94,6 +116,9 @@ export default function ClassificationStartPage() {
     try {
       if (!capturedFile) throw new Error("File belum ada");
 
+      // ✅ TAMBAHAN: aktifkan loading saat proses scan
+      setIsScanning(true);
+
       const result = await scanSampah(capturedFile);
 
       navigate("/klasifikasi-result", {
@@ -105,11 +130,17 @@ export default function ClassificationStartPage() {
     } catch (err) {
       console.error("SCAN ERROR:", err.response?.data || err.message);
       alert("Gagal melakukan klasifikasi");
+    } finally {
+      // ✅ TAMBAHAN: matikan loading jika error / setelah selesai
+      setIsScanning(false);
     }
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-purple-600 p-6 pt-20">
+      {/* ✅ TAMBAHAN: overlay loading proses scan */}
+      <LoadingOverlay show={isScanning} text="Sedang memproses scan..." />
+
       <motion.div
         className="bg-white p-8 rounded-2xl shadow-2xl max-w-xl w-full text-center"
         initial={{ opacity: 0, y: 40 }}
@@ -185,7 +216,11 @@ export default function ClassificationStartPage() {
             <div className="flex flex-col gap-3">
               <motion.button
                 onClick={goToResult}
-                className="py-3 bg-green-600 text-white rounded-xl font-bold"
+                // ✅ TAMBAHAN: disable tombol saat scanning agar tidak double request
+                disabled={isScanning}
+                className={`py-3 bg-green-600 text-white rounded-xl font-bold ${
+                  isScanning ? "opacity-70 cursor-not-allowed" : ""
+                }`}
                 whileHover={{ scale: 1.07 }}
               >
                 🔍 Klasifikasikan
@@ -193,7 +228,11 @@ export default function ClassificationStartPage() {
 
               <motion.button
                 onClick={retakePhoto}
-                className="py-3 bg-yellow-500 text-white rounded-xl font-bold"
+                // ✅ TAMBAHAN: disable saat scanning
+                disabled={isScanning}
+                className={`py-3 bg-yellow-500 text-white rounded-xl font-bold ${
+                  isScanning ? "opacity-70 cursor-not-allowed" : ""
+                }`}
                 whileHover={{ scale: 1.07 }}
               >
                 🔄 Ulang Foto
@@ -201,7 +240,11 @@ export default function ClassificationStartPage() {
 
               <motion.button
                 onClick={goBackHome}
-                className="py-3 bg-gray-500 text-white rounded-xl font-bold"
+                // ✅ TAMBAHAN: disable saat scanning
+                disabled={isScanning}
+                className={`py-3 bg-gray-500 text-white rounded-xl font-bold ${
+                  isScanning ? "opacity-70 cursor-not-allowed" : ""
+                }`}
                 whileHover={{ scale: 1.07 }}
               >
                 ⬅ Kembali ke Home
