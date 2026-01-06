@@ -80,6 +80,14 @@ export default function QuizQuestionPage() {
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex === questions.length - 1;
 
+  // =======================
+  // FIX: Ambil status benar dari currentQuestion.options (bukan dari selectedAnswer)
+  // =======================
+  const selectedOption = currentQuestion?.options?.find(
+    (o) => Number(o.id) === Number(selectedAnswer?.id)
+  );
+  const isSelectedCorrect = !!selectedOption?.isCorrect;
+
   const handleSelectAnswer = async (option) => {
     if (isAnswered) return;
 
@@ -229,10 +237,10 @@ export default function QuizQuestionPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className={`mt-4 text-center font-bold text-lg ${
-              selectedAnswer?.isCorrect ? "text-green-700" : "text-red-600"
+              isSelectedCorrect ? "text-green-700" : "text-red-600"
             }`}
           >
-            {selectedAnswer?.isCorrect
+            {isSelectedCorrect
               ? "🎉 Jawabanmu Benar!"
               : "❌ Jawaban Salah. Lanjut ke pertanyaan berikutnya."}
           </motion.p>
