@@ -27,7 +27,6 @@ router.post(
 
     const image_file = req.file ? req.file.filename : null;
 
-    // ✅ is_active DIPAKSA = 1
     const sql = `
       INSERT INTO articles
       (title, tags, deskripsi, icon, content, video_url, image_url, image_file, category, is_active)
@@ -49,10 +48,7 @@ router.post(
       ],
       (err, result) => {
         if (err) return res.status(500).json(err);
-        res.json({
-          message: "Artikel berhasil ditambahkan",
-          id: result.insertId
-        });
+        res.json({ message: "Artikel berhasil ditambahkan", id: result.insertId });
       }
     );
   }
@@ -60,11 +56,13 @@ router.post(
 
 /* =========================
    READ SEMUA ARTIKEL (ADMIN)
+   ✅ FIX: HANYA AMBIL YANG AKTIF
 ========================= */
 router.get("/", verifyToken, isAdmin, (req, res) => {
   const sql = `
     SELECT *
     FROM articles
+    WHERE is_active = 1
     ORDER BY created_at DESC
   `;
 
@@ -74,17 +72,22 @@ router.get("/", verifyToken, isAdmin, (req, res) => {
   });
 });
 
+
 /* =========================
    READ DETAIL ARTIKEL (ADMIN)
+   ✅ FIX: JANGAN TAMPILKAN YANG SUDAH SOFT DELETE
 ========================= */
 router.get("/:id", verifyToken, isAdmin, (req, res) => {
-  const sql = `SELECT * FROM articles WHERE id = ?`;
+  console.log("✅ HIT /api/admin/articles (adminArticle.js)"); 
+  const sql = `
+    SELECT *
+    FROM articles
+    WHERE id = ? AND COALESCE(is_active, 1) = 1
+  `;
 
   db.query(sql, [req.params.id], (err, rows) => {
     if (err) return res.status(500).json(err);
-    if (!rows.length)
-      return res.status(404).json({ message: "Artikel tidak ditemukan" });
-
+    if (!rows.length) return res.status(404).json({ message: "Artikel tidak ditemukan" });
     res.json(rows[0]);
   });
 });
@@ -112,7 +115,6 @@ router.put(
 
     const image_file = req.file ? req.file.filename : req.body.old_image;
 
-    // ✅ is_active tidak boleh NULL
     const sql = `
       UPDATE articles SET
         title = ?,
@@ -153,19 +155,19 @@ router.put(
 
 /* =========================
    DELETE ARTIKEL (ADMIN)
-   (TIDAK DIUBAH – DELETE FISIK)
+   (SOFT DELETE)
 ========================= */
 router.delete("/:id", verifyToken, isAdmin, (req, res) => {
   const sql = `
-  UPDATE articles
-  SET is_active = 0
-  WHERE id = ?
-`;
+    UPDATE articles
+    SET is_active = 0
+    WHERE id = ?
+  `;
 
-db.query(sql, [req.params.id], (err) => {
-  if (err) return res.status(500).json(err);
-  res.json({ message: "Artikel berhasil dihapus (soft delete)" });
-});
+  db.query(sql, [req.params.id], (err) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: "Artikel berhasil dihapus (soft delete)" });
+  });
 });
 
 module.exports = router;
