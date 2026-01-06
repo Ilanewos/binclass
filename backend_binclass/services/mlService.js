@@ -28,10 +28,15 @@ async function predictSampah(imagePath) {
       throw new Error("INVALID_ML_RESPONSE");
     }
 
+    // NORMALISASI LABEL (biar pasti match key di sampahInfo)
+    const label = String(data.label || "").trim().toLowerCase();
+
+    console.log("LABEL ML:", label);
+
     return {
-      label: data.label,
+      label,
       confidence: data.confidence,
-      info: getSampahInfo(data.label)
+      info: getSampahInfo(label)
     };
 
   } catch (error) {

@@ -1,6 +1,7 @@
 const fs = require("fs");
 const mlService = require("../services/mlService");
 const db = require("../config/db");
+const { getSampahInfo } = require("../services/sampahInfo");
 
 /**
  * ===============================
@@ -30,6 +31,13 @@ const scanSampah = async (req, res) => {
     // 3️⃣ Kirim ke ML service
     const result = await mlService.predictSampah(req.file.path);
     // result = { label, confidence, info }
+
+
+
+// tambahkan ini:
+result.info = getSampahInfo(String(result.label || "").trim().toLowerCase());
+
+
 
     // 4️⃣ Simpan ke database
     const sql = `
