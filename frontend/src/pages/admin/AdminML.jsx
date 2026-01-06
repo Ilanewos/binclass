@@ -1,3 +1,6 @@
+// AdminML
+// Halaman monitoring hasil scan ML (read-only + soft delete)
+
 import { useEffect, useMemo, useState } from "react";
 import adminAxios from "../../utils/adminAxios";
 
